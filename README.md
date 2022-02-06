@@ -1,5 +1,8 @@
 
-# Liverse - Auction based billboard
+# Liverse - Auction based billboard (wip)
+
+https://decentraland-billboard.vercel.app/
+![image](https://user-images.githubusercontent.com/29498872/152671335-586828a7-39b6-4f76-a13c-82b326efcaee.png)
 
 ## Used 
  - NextJs
