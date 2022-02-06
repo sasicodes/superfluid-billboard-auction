@@ -1,31 +1,18 @@
-import { LogoutIcon } from '@heroicons/react/outline'
 import shortenAddress from '@utils/helpers/shortenAddress'
 import clsx from 'clsx'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
-import { useMoralis } from 'react-moralis'
-import { useNetwork } from 'wagmi'
+import { useAccount, useConnect, useNetwork } from 'wagmi'
 
 const Header = () => {
   const router = useRouter()
 
-  const { isAuthenticated, authenticate, logout, user } = useMoralis()
   const [{ data: network }, switchNetwork] = useNetwork()
-
-  const onConnect = async () => {
-    await authenticate({
-      signingMessage: 'Authorize linking of your wallet'
-    })
-  }
-
-  const onLogout = () => {
-    logout()
-    router.push('/')
-  }
+  const [{ data: connectData }, connect] = useConnect()
+  const [{ data: account }] = useAccount()
 
   useEffect(() => {
     if (network.chain?.unsupported) {
-      onLogout()
       router.push('/')
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -41,20 +28,21 @@ const Header = () => {
           onClick={() =>
             network.chain?.unsupported && switchNetwork
               ? switchNetwork(80001)
-              : onConnect()
+              : connect(connectData.connectors[0])
           }
-          disabled={isAuthenticated}
           className={clsx(
             'space-x-2 hidden lg:flex items-center justify-center px-4 py-1.5 overflow-hidden  border-2 border-transparent outline-none rounded-lg border-gray-700',
             {
               'border-red-400': network.chain?.unsupported,
-              'hover:bg-gray-700': !isAuthenticated
+              'hover:bg-gray-700': !connectData.connected
             }
           )}
         >
           <div>
-            {isAuthenticated && !network.chain?.unsupported ? (
-              <span>{shortenAddress(user?.get('ethAddress'))}</span>
+            {account?.address &&
+            connectData.connected &&
+            !network.chain?.unsupported ? (
+              <span>{shortenAddress(account?.address)}</span>
             ) : network.chain?.unsupported && switchNetwork ? (
               'Switch Network'
             ) : (
@@ -62,14 +50,6 @@ const Header = () => {
             )}
           </div>
         </button>
-        {isAuthenticated && (
-          <button
-            onClick={() => onLogout()}
-            className="flex items-center justify-center px-4 py-2 overflow-hidden border-2 border-gray-700 rounded-lg hover:bg-gray-700 focus:outline-none"
-          >
-            <LogoutIcon className="w-5 h-5" />
-          </button>
-        )}
       </div>
     </header>
   )
